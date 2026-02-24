@@ -1,21 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProducts } from "../../services/productApi";
 import styles from "./Home.module.scss";
+
+function formatMoney(n) {
+  const num = Number(n);
+  if (Number.isNaN(num)) return "";
+  return `$${num.toFixed(2)}`;
+}
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
 
+  const [q, setQ] = useState("");
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState("featured");
+
   useEffect(() => {
     async function loadProducts() {
       setLoading(true);
       setError("");
       try {
-        const items = await getProducts(12);
+        const items = await getProducts(30);
         setProducts(items);
-      } catch (err) {
+      } catch (e) {
         setError("No data received");
       } finally {
         setLoading(false);
@@ -24,68 +34,200 @@ export default function Home() {
     loadProducts();
   }, []);
 
-  if (loading) return <h2 className={styles.center}>Loading...</h2>;
-  if (error) return <h2 className={styles.center}>{error}</h2>;
-  if (!products.length) return <h2 className={styles.center}>No products</h2>;
+  const categories = useMemo(() => {
+    const set = new Set(products.map((p) => p.category).filter(Boolean));
+    return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [products]);
+
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+
+    let list = products;
+
+    if (category !== "all") list = list.filter((p) => p.category === category);
+
+    if (query) {
+      list = list.filter((p) => {
+        const t = (p.title || "").toLowerCase();
+        const b = (p.brand || "").toLowerCase();
+        return t.includes(query) || b.includes(query);
+      });
+    }
+
+    const copy = [...list];
+    switch (sort) {
+      case "price_asc":
+        copy.sort((a, b) => Number(a.price) - Number(b.price));
+        break;
+      case "price_desc":
+        copy.sort((a, b) => Number(b.price) - Number(a.price));
+        break;
+      case "rating":
+        copy.sort((a, b) => Number(b.rating) - Number(a.rating));
+        break;
+      case "new":
+        copy.sort((a, b) => Number(b.id) - Number(a.id));
+        break;
+      default:
+        break;
+    }
+
+    return copy;
+  }, [products, q, category, sort]);
+
+  if (loading) return <div className={styles.center}>Loading…</div>;
+  if (error) return <div className={styles.center}>{error}</div>;
 
   return (
-    <div className={styles.page}>
+    <section className={styles.page}>
       <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.titleBlock}>
+        <header className={styles.header}>
+          <div>
             <h1 className={styles.h1}>Products</h1>
-            <p className={styles.sub}>Curated picks — clean store layout</p>
           </div>
+          <div className={styles.count}>{filtered.length} items</div>
+        </header>
+
+        <div className={styles.toolbar}>
+          <label className={`${styles.search} ${styles.searchArea}`}>
+            <span className={styles.searchLabel}>Search</span>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name or brand…"
+              className={styles.input}
+            />
+          </label>
+
+          <label className={`${styles.selectWrap} ${styles.categoryArea}`}>
+            <span className={styles.selectLabel}>Category</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={styles.select}
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c === "all" ? "All" : c}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={`${styles.selectWrap} ${styles.sortArea}`}>
+            <span className={styles.selectLabel}>Sort</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className={styles.select}
+            >
+              <option value="featured">Featured</option>
+              <option value="new">New</option>
+              <option value="rating">Top rated</option>
+              <option value="price_asc">Price: low → high</option>
+              <option value="price_desc">Price: high → low</option>
+            </select>
+          </label>
         </div>
 
-        <div className={styles.grid}>
-          {products.map((item) => {
-            const img = item.thumbnail || item.image;
-            const category = item.category || "Product";
+        {filtered.length === 0 ? (
+          <div className={styles.empty}>Nothing found.</div>
+        ) : (
+          <div className={styles.grid}>
+            {filtered.map((p) => {
+              const price = Number(p.price);
+              const discount = Number(p.discountPercentage || 0);
+              const hasDiscount = discount > 0;
+              const oldPrice = hasDiscount
+                ? price / (1 - discount / 100)
+                : null;
 
-            return (
-              <Link
-                key={item.id}
-                to={`/product/${item.id}`}
-                className={styles.card}
-              >
-                <div className={styles.media}>
-                  <span className={styles.badge}>{category}</span>
-                  <span className={styles.pricePill}>${item.price}</span>
-                  <div className={styles.imgWrap}>
-                    <img className={styles.img} src={img} alt={item.title} />
+              return (
+                <article key={p.id} className={styles.item}>
+                  <Link
+                    to={`/product/${p.id}`}
+                    className={styles.mediaLink}
+                    aria-label={p.title}
+                  >
+                    <div className={styles.media}>
+                      {hasDiscount && (
+                        <span className={styles.badge}>
+                          -{Math.round(discount)}%
+                        </span>
+                      )}
+                      {p.stock < 10 && (
+                        <span className={styles.badgeAlt}>LOW</span>
+                      )}
+
+                      <img
+                        src={p.thumbnail}
+                        alt={p.title}
+                        loading="lazy"
+                        className={styles.img}
+                      />
+                    </div>
+                  </Link>
+
+                  <div className={styles.info}>
+                    <div className={styles.topLine}>
+                      <div className={styles.title}>
+                        <Link
+                          to={`/product/${p.id}`}
+                          className={styles.titleLink}
+                        >
+                          {p.title}
+                        </Link>
+                      </div>
+
+                      <div className={styles.price}>
+                        <span className={styles.priceNow}>
+                          {formatMoney(price)}
+                        </span>
+                        {hasDiscount && (
+                          <span className={styles.priceOld}>
+                            {formatMoney(oldPrice)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className={styles.meta}>
+                      {p.brand && (
+                        <>
+                          <span className={styles.brand}>{p.brand}</span>
+                          <span className={styles.dot}>•</span>
+                        </>
+                      )}
+                      <span className={styles.rating}>
+                        ★ {Number(p.rating).toFixed(1)}
+                      </span>
+                      <span className={styles.dot}>•</span>
+                      <span className={styles.stock}>{p.stock} in stock</span>
+                    </div>
+
+                    <div className={styles.actions}>
+                      <Link
+                        to={`/product/${p.id}`}
+                        className={styles.primaryBtn}
+                      >
+                        КУПИТИ ЗАРАЗ
+                      </Link>
+
+                      <button
+                        type="button"
+                        className={styles.ghostBtn}
+                        onClick={() => console.log("Add to cart:", p.id)}
+                      >
+                        + Add
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className={styles.body}>
-                  <h3 className={styles.name}>{item.title}</h3>
-                  <p className={styles.desc}>{item.description}</p>
-
-                  <div className={styles.actions}>
-                    <button
-                      className={styles.addBtn}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log("add to cart", item.id);
-                      }}
-                    >
-                      Add to cart
-                    </button>
-
-                    <button
-                      className={styles.detailsBtn}
-                      aria-label="Open details"
-                      title="Details"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
