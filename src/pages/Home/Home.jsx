@@ -211,7 +211,7 @@ export default function Home() {
                         to={`/product/${p.id}`}
                         className={styles.primaryBtn}
                       >
-                        КУПИТИ ЗАРАЗ
+                        SEE MORE
                       </Link>
 
                       <button
