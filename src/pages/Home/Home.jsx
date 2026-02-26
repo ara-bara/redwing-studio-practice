@@ -5,7 +5,7 @@ import styles from "./Home.module.scss";
 
 function formatMoney(n) {
   const num = Number(n);
-  if (Number.isNaN(num)) return "";
+  if (!Number.isFinite(num)) return "";
   return `$${num.toFixed(2)}`;
 }
 
@@ -35,46 +35,44 @@ export default function Home() {
   }, []);
 
   const categories = useMemo(() => {
-    const set = new Set(products.map((p) => p.category).filter(Boolean));
-    return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+    return [
+      "all",
+      ...Array.from(
+        new Set(products.map((p) => p.category).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b)),
+    ];
   }, [products]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-
     let list = products;
-
-    if (category !== "all") list = list.filter((p) => p.category === category);
-
-    if (query) {
-      list = list.filter((p) => {
-        const t = (p.title || "").toLowerCase();
-        const b = (p.brand || "").toLowerCase();
-        return t.includes(query) || b.includes(query);
+    if (category !== "all") list = list.filter((f) => f.category === category);
+    if (query !== "")
+      list = list.filter((s) => {
+        const title = (s.title || "").toLowerCase();
+        const brand = (s.brand || "").toLowerCase();
+        return title.includes(query) || brand.includes(query);
       });
-    }
 
     const copy = [...list];
+
     switch (sort) {
+      case "new":
+        copy.sort((a, b) => Number(b.id) - Number(a.id));
+        break;
+      case "rating":
+        copy.sort((a, b) => Number(b.rating) - Number(a.rating));
+        break;
       case "price_asc":
         copy.sort((a, b) => Number(a.price) - Number(b.price));
         break;
       case "price_desc":
         copy.sort((a, b) => Number(b.price) - Number(a.price));
         break;
-      case "rating":
-        copy.sort((a, b) => Number(b.rating) - Number(a.rating));
-        break;
-      case "new":
-        copy.sort((a, b) => Number(b.id) - Number(a.id));
-        break;
-      default:
-        break;
     }
 
     return copy;
   }, [products, q, category, sort]);
-
   if (loading) return <div className={styles.center}>Loading…</div>;
   if (error) return <div className={styles.center}>{error}</div>;
 
@@ -135,12 +133,13 @@ export default function Home() {
         ) : (
           <div className={styles.grid}>
             {filtered.map((p) => {
-              const price = Number(p.price);
+              const oldPrice = Number(p.price);
               const discount = Number(p.discountPercentage || 0);
               const hasDiscount = discount > 0;
-              const oldPrice = hasDiscount
-                ? price / (1 - discount / 100)
-                : null;
+
+              const priceNow = hasDiscount
+                ? oldPrice * (1 - discount / 100)
+                : oldPrice;
 
               return (
                 <article key={p.id} className={styles.item}>
@@ -155,6 +154,7 @@ export default function Home() {
                           -{Math.round(discount)}%
                         </span>
                       )}
+
                       {p.stock < 10 && (
                         <span className={styles.badgeAlt}>LOW</span>
                       )}
@@ -181,8 +181,9 @@ export default function Home() {
 
                       <div className={styles.price}>
                         <span className={styles.priceNow}>
-                          {formatMoney(price)}
+                          {formatMoney(priceNow)}
                         </span>
+
                         {hasDiscount && (
                           <span className={styles.priceOld}>
                             {formatMoney(oldPrice)}
