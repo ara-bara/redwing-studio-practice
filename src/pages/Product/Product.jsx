@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getProductsById } from "../../services/productApi";
-import ProductSkeleton from "./ProductSkeleton";
+import { formatMoney } from "../../utils/formatMoney";
+import { calcPricing } from "../../utils/pricing";
+import { getProductsById } from "../../utils/productApi";
 import styles from "./Product.module.scss";
-
-function money(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "";
-  return `$${n.toFixed(2)}`;
-}
-
+import ProductSkeleton from "./ProductSkeleton";
 export default function Product() {
   const { id } = useParams();
 
@@ -26,6 +21,7 @@ export default function Product() {
       try {
         const item = await getProductsById(id);
         setProduct(item);
+        console.log(item);
       } catch (e) {
         setError("No received data");
       } finally {
@@ -38,13 +34,7 @@ export default function Product() {
 
   const pricing = useMemo(() => {
     if (!product) return null;
-
-    const oldPrice = Number(product.price);
-    const discount = Number(product.discountPercentage || 0);
-    const hasDiscount = discount > 0;
-    const priceNow = hasDiscount ? oldPrice * (1 - discount / 100) : oldPrice;
-
-    return { oldPrice, discount, hasDiscount, priceNow };
+    return calcPricing(product.price, product.discountPercentage);
   }, [product]);
 
   if (error) return <div className={styles.center}>{error}</div>;
@@ -131,12 +121,12 @@ export default function Product() {
             <div className={styles.priceBox}>
               <div className={styles.priceLine}>
                 <span className={styles.priceNow}>
-                  {money(pricing.priceNow)}
+                  {formatMoney(pricing.priceNow)}
                 </span>
 
                 {pricing.hasDiscount && (
                   <span className={styles.priceOld}>
-                    {money(pricing.oldPrice)}
+                    {formatMoney(pricing.oldPrice)}
                   </span>
                 )}
               </div>

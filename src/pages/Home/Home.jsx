@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProducts } from "../../services/productApi";
+import { getProducts } from "../../utils/productApi";
+import { calcPricing } from "../../utils/pricing";
+import { formatMoney } from "../../utils/formatMoney";
+import {
+  filterProducts,
+  getCategories,
+  sortProducts,
+} from "../../utils/products";
+
 import styles from "./Home.module.scss";
-
-function formatMoney(n) {
-  const num = Number(n);
-  if (!Number.isFinite(num)) return "";
-  return `$${num.toFixed(2)}`;
-}
-
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
@@ -34,44 +35,11 @@ export default function Home() {
     loadProducts();
   }, []);
 
-  const categories = useMemo(() => {
-    return [
-      "all",
-      ...Array.from(
-        new Set(products.map((p) => p.category).filter(Boolean)),
-      ).sort((a, b) => a.localeCompare(b)),
-    ];
-  }, [products]);
+  const categories = useMemo(() => getCategories(products), [products]);
 
   const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    let list = products;
-    if (category !== "all") list = list.filter((f) => f.category === category);
-    if (query !== "")
-      list = list.filter((s) => {
-        const title = (s.title || "").toLowerCase();
-        const brand = (s.brand || "").toLowerCase();
-        return title.includes(query) || brand.includes(query);
-      });
-
-    const copy = [...list];
-
-    switch (sort) {
-      case "new":
-        copy.sort((a, b) => Number(b.id) - Number(a.id));
-        break;
-      case "rating":
-        copy.sort((a, b) => Number(b.rating) - Number(a.rating));
-        break;
-      case "price_asc":
-        copy.sort((a, b) => Number(a.price) - Number(b.price));
-        break;
-      case "price_desc":
-        copy.sort((a, b) => Number(b.price) - Number(a.price));
-        break;
-    }
-
-    return copy;
+    const afterFilter = filterProducts(products, { q, category });
+    return sortProducts(afterFilter, sort);
   }, [products, q, category, sort]);
   if (loading) return <div className={styles.center}>Loading…</div>;
   if (error) return <div className={styles.center}>{error}</div>;
@@ -133,13 +101,10 @@ export default function Home() {
         ) : (
           <div className={styles.grid}>
             {filtered.map((p) => {
-              const oldPrice = Number(p.price);
-              const discount = Number(p.discountPercentage || 0);
-              const hasDiscount = discount > 0;
-
-              const priceNow = hasDiscount
-                ? oldPrice * (1 - discount / 100)
-                : oldPrice;
+              const { oldPrice, discount, hasDiscount, priceNow } = calcPricing(
+                p.price,
+                p.discountPercentage,
+              );
 
               return (
                 <article key={p.id} className={styles.item}>
