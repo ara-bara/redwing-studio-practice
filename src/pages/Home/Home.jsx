@@ -112,13 +112,8 @@ export default function Home() {
               const isInCart = items.some((item) => item.id === p.id);
 
               const cartButton = isInCart ? (
-                <Link to="/cart">
-                  <button
-                    type="button"
-                    className={`${styles.ghostBtn} ${styles.inCartBtn}`}
-                  >
-                    In cart
-                  </button>
+                <Link to="/cart" className={styles.ghostBtn}>
+                  In cart
                 </Link>
               ) : (
                 <button
