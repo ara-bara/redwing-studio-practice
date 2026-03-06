@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { formatMoney } from "../../utils/formatMoney";
 import { calcPricing } from "../../utils/pricing";
 import { getProductsById } from "../../utils/productApi";
-import { useCart } from "../../context/CartContext";
 import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
 export default function Product() {
@@ -12,6 +12,7 @@ export default function Product() {
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
+  const [recentProducts, setRecentProducts] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -32,6 +33,24 @@ export default function Product() {
 
     load();
   }, [id]);
+
+  useEffect(() => {
+    let recentViews = JSON.parse(localStorage.getItem("recent")) || [];
+    setRecentProducts(recentViews);
+  }, []);
+  useEffect(() => {
+    if (!product) return;
+
+    let recentViews = JSON.parse(localStorage.getItem("recent")) || [];
+
+    recentViews = recentViews.filter((item) => item.id !== product.id);
+    recentViews = [...recentViews, product];
+
+    let newViews = recentViews.slice(-6, -1);
+
+    localStorage.setItem("recent", JSON.stringify(recentViews));
+    setRecentProducts(newViews);
+  }, [product]);
 
   const pricing = useMemo(() => {
     if (!product) return null;
@@ -97,8 +116,10 @@ export default function Product() {
 
         <div className={styles.layout}>
           <div className={styles.mediaCol}>
-            <div className={styles.media}>
-              <img className={styles.img} src={imgSrc} alt={product.title} />
+            <div className={styles.mediaSticky}>
+              <div className={styles.media}>
+                <img className={styles.img} src={imgSrc} alt={product.title} />
+              </div>
             </div>
           </div>
 
@@ -193,32 +214,74 @@ export default function Product() {
                 </div>
               </div>
             )}
-
-            {reviews.length > 0 && (
-              <div className={styles.block}>
-                <div className={styles.blockTitle}>Reviews</div>
-                <div className={styles.reviews}>
-                  {reviews.slice(0, 3).map((r, idx) => (
-                    <div
-                      key={`${r.reviewerName || "r"}-${idx}`}
-                      className={styles.review}
-                    >
-                      <div className={styles.reviewTop}>
-                        <span className={styles.reviewName}>
-                          {r.reviewerName || "Anonymous"}
-                        </span>
-                        <span className={styles.reviewRate}>
-                          ★ {Number(r.rating).toFixed(1)}
-                        </span>
-                      </div>
-                      <div className={styles.reviewText}>{r.comment}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {recentProducts.length > 0 && (
+          <div className={styles.sectionBlock}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>Recently viewed</h2>
+            </div>
+
+            <div className={styles.recentGrid}>
+              {recentProducts.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className={styles.recentCard}
+                >
+                  <div className={styles.recentMedia}>
+                    <img
+                      src={item.thumbnail || item.images?.[0]}
+                      alt={item.title}
+                      className={styles.recentImg}
+                    />
+                  </div>
+
+                  <div className={styles.recentBody}>
+                    <div className={styles.recentCategory}>{item.category}</div>
+                    <div className={styles.recentTitle}>{item.title}</div>
+                    <div className={styles.recentBottom}>
+                      <span className={styles.recentPrice}>
+                        {formatMoney(item.price)}
+                      </span>
+                      <span className={styles.recentRating}>
+                        ★ {Number(item.rating || 0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reviews.length > 0 && (
+          <div className={styles.sectionBlock}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>Reviews</h2>
+            </div>
+
+            <div className={styles.reviewsWide}>
+              {reviews.slice(0, 3).map((r, idx) => (
+                <div
+                  key={`${r.reviewerName || "r"}-${idx}`}
+                  className={styles.review}
+                >
+                  <div className={styles.reviewTop}>
+                    <span className={styles.reviewName}>
+                      {r.reviewerName || "Anonymous"}
+                    </span>
+                    <span className={styles.reviewRate}>
+                      ★ {Number(r.rating).toFixed(1)}
+                    </span>
+                  </div>
+                  <div className={styles.reviewText}>{r.comment}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
