@@ -103,7 +103,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
 
 .title {
@@ -113,11 +113,22 @@
   letter-spacing: 0.6px;
   text-transform: uppercase;
   min-width: 0;
+  flex: 1;
 }
 
-.price {
-  font-weight: 900;
-  letter-spacing: 0.3px;
+.priceBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.priceOld {
+  font-size: 13px;
+  line-height: 1;
+  color: #8a8a8a;
+  text-decoration: line-through;
   white-space: nowrap;
 }
 
@@ -397,7 +408,7 @@
   .top {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 8px;
   }
 
   .title {
@@ -406,11 +417,22 @@
     word-break: break-word;
   }
 
-  .price {
-    font-size: 14px;
-    white-space: normal; 
+  .priceBox {
+    align-items: flex-start;
+    text-align: left;
   }
 
+  .priceCurrent {
+    font-size: 20px;
+  }
+
+  .priceOld {
+    font-size: 12px;
+  }
+
+  .priceSave {
+    font-size: 10px;
+  }
   .controls {
     flex-direction: column;
     align-items: stretch;
@@ -429,7 +451,6 @@
 }
 
 @media (max-width: 360px) {
-
   .controls {
     flex-direction: column;
     align-items: stretch;

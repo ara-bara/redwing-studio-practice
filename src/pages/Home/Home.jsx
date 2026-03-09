@@ -13,15 +13,13 @@ import {
 import styles from "./Home.module.scss";
 
 export default function Home() {
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
-
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("featured");
-  const { items } = useCart();
 
   useEffect(() => {
     async function loadProducts() {

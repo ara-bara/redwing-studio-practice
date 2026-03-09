@@ -8,7 +8,7 @@ import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
 export default function Product() {
   const { id } = useParams();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
@@ -100,6 +100,22 @@ export default function Product() {
       ? product.reviews
       : [];
 
+  const isInCart = items.some((item) => item.id === product.id);
+
+  const cartButton = isInCart ? (
+    <Link to="/cart" className={styles.primaryBtn}>
+      Go to cart
+    </Link>
+  ) : (
+    <button
+      type="button"
+      className={styles.primaryBtn}
+      onClick={() => addToCart(product)}
+    >
+      + ADD TO CART
+    </button>
+  );
+
   return (
     <section className={styles.page}>
       <div className={styles.container}>
@@ -164,14 +180,7 @@ export default function Product() {
               <div className={styles.h2}>Description</div>
               <p className={styles.p}>{product.description}</p>
             </div>
-
-            <button
-              type="button"
-              className={styles.primaryBtn}
-              onClick={() => addToCart(product)}
-            >
-              + ADD TO CART
-            </button>
+            {cartButton}
 
             <div className={styles.detailsGrid}>
               <div className={styles.detail}>

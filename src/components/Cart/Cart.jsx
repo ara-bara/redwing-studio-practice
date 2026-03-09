@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { calcCartSummary, calcItemPricing } from "../../utils/cartPricing";
 import styles from "./Cart.module.scss";
 
 export default function Cart() {
   const { items, setQty, removeFromCart } = useCart();
 
   const uniqueItems = items.length;
-  const totalQty = items.reduce((sum, el) => sum + el.qty, 0);
-  const totalPrice = items.reduce((sum, el) => sum + el.qty * el.price, 0);
+  const { totalDiscount, subtotal, totalWithDiscount, totalQty } =
+    calcCartSummary(items);
 
   return (
     <section className={styles.page}>
@@ -35,59 +36,70 @@ export default function Cart() {
         ) : (
           <div className={styles.layout}>
             <div className={styles.list}>
-              {items.map((item) => (
-                <article key={item.id} className={styles.row}>
-                  <div className={styles.media}>
-                    <img
-                      className={styles.img}
-                      src={item.thumbnail}
-                      alt={item.title}
-                      loading="lazy"
-                    />
-                  </div>
+              {items.map((item) => {
+                const { itemOldTotal, itemTotal } = calcItemPricing(item);
 
-                  <div className={styles.info}>
-                    <div className={styles.top}>
-                      <h3 className={styles.title}>{item.title}</h3>
-                      <div className={styles.price}>
-                        ${Number(item.price).toFixed(2)}
-                      </div>
+                return (
+                  <article key={item.id} className={styles.row}>
+                    <div className={styles.media}>
+                      <img
+                        className={styles.img}
+                        src={item.thumbnail}
+                        alt={item.title}
+                        loading="lazy"
+                      />
                     </div>
 
-                    <div className={styles.controls}>
-                      <div className={styles.qty}>
-                        <button
-                          type="button"
-                          className={styles.qtyBtn}
-                          onClick={() => setQty(item.id, item.qty - 1)}
-                          aria-label="Decrease quantity"
-                        >
-                          −
-                        </button>
+                    <div className={styles.info}>
+                      <div className={styles.top}>
+                        <h3 className={styles.title}>{item.title}</h3>
 
-                        <span className={styles.qtyValue}>{item.qty}</span>
+                        <div className={styles.priceBox}>
+                          <div className={styles.priceCurrent}>
+                            ${itemTotal.toFixed(2)}
+                          </div>
 
-                        <button
-                          type="button"
-                          className={styles.qtyBtn}
-                          onClick={() => setQty(item.id, item.qty + 1)}
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
+                          <div className={styles.priceOld}>
+                            ${itemOldTotal.toFixed(2)}
+                          </div>
+                        </div>
                       </div>
 
-                      <button
-                        type="button"
-                        className={styles.remove}
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        Remove
-                      </button>
+                      <div className={styles.controls}>
+                        <div className={styles.qty}>
+                          <button
+                            type="button"
+                            className={styles.qtyBtn}
+                            onClick={() => setQty(item.id, item.qty - 1)}
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+
+                          <span className={styles.qtyValue}>{item.qty}</span>
+
+                          <button
+                            type="button"
+                            className={styles.qtyBtn}
+                            onClick={() => setQty(item.id, item.qty + 1)}
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={styles.remove}
+                          onClick={() => removeFromCart(item.id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
 
             <aside className={styles.summary}>
@@ -99,15 +111,23 @@ export default function Cart() {
               </div>
 
               <div className={styles.summaryRow}>
-                <span className={styles.muted}>Total qty</span>
+                <span className={styles.muted}>Total quantity</span>
                 <span>{totalQty}</span>
               </div>
 
               <div className={styles.divider} />
 
               <div className={styles.summaryRowTotal}>
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className={styles.summaryRowTotal}>
+                <span>Discount</span>
+                <span>${totalDiscount.toFixed(2)}</span>
+              </div>
+              <div className={styles.summaryRowTotal}>
                 <span>Total</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <span>${totalWithDiscount.toFixed(2)}</span>
               </div>
 
               <Link to="/" className={styles.ghostBtn}>
