@@ -265,34 +265,57 @@ export default function Product() {
             </div>
 
             <div className={styles.recentGrid}>
-              {recentProducts.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/product/${item.id}`}
-                  className={styles.recentCard}
-                >
-                  <div className={styles.recentMedia}>
-                    <img
-                      src={item.thumbnail || item.images?.[0]}
-                      alt={item.title}
-                      className={styles.recentImg}
-                    />
-                  </div>
+              {recentProducts.map((item) => {
+                const isRecentInCart = items.some(
+                  (cartItem) => cartItem.id === item.id,
+                );
 
-                  <div className={styles.recentBody}>
-                    <div className={styles.recentCategory}>{item.category}</div>
-                    <div className={styles.recentTitle}>{item.title}</div>
-                    <div className={styles.recentBottom}>
-                      <span className={styles.recentPrice}>
-                        {formatMoney(item.price)}
-                      </span>
-                      <span className={styles.recentRating}>
-                        ★ {Number(item.rating || 0).toFixed(1)}
-                      </span>
-                    </div>
+                return (
+                  <div key={item.id} className={styles.recentCard}>
+                    <Link
+                      to={`/product/${item.id}`}
+                      className={styles.cardLink}
+                    >
+                      <div className={styles.recentMedia}>
+                        <img
+                          src={item.thumbnail || item.images?.[0]}
+                          alt={item.title}
+                          className={styles.recentImg}
+                        />
+                      </div>
+
+                      <div className={styles.recentBody}>
+                        <div className={styles.recentCategory}>
+                          {item.category}
+                        </div>
+                        <div className={styles.recentTitle}>{item.title}</div>
+                        <div className={styles.recentBottom}>
+                          <span className={styles.recentPrice}>
+                            {formatMoney(item.price)}
+                          </span>
+                          <span className={styles.recentRating}>
+                            ★ {Number(item.rating || 0).toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {isRecentInCart ? (
+                      <Link to="/cart" className={styles.cardIconBtn}>
+                        ✓
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.cardIconBtn}
+                        onClick={() => addToCart(item)}
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -300,40 +323,61 @@ export default function Product() {
         {!loadingAllProducts && similarProducts.length > 0 && (
           <div className={styles.sectionBlock}>
             <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>Similar products</h2>
+              <h2 className={styles.sectionTitle}>Recommended for you</h2>
             </div>
 
             <div className={styles.similarGrid}>
-              {similarProducts.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/product/${item.id}`}
-                  className={styles.similarCard}
-                >
-                  <div className={styles.similarMedia}>
-                    <img
-                      src={item.thumbnail || item.images?.[0]}
-                      alt={item.title}
-                      className={styles.similarImg}
-                    />
-                  </div>
+              {similarProducts.map((item) => {
+                const isSimilarInCart = items.some(
+                  (cartItem) => cartItem.id === item.id,
+                );
 
-                  <div className={styles.similarBody}>
-                    <div className={styles.similarCategory}>
-                      {item.category}
-                    </div>
-                    <div className={styles.similarTitle}>{item.title}</div>
-                    <div className={styles.similarBottom}>
-                      <span className={styles.similarPrice}>
-                        {formatMoney(item.price)}
-                      </span>
-                      <span className={styles.similarRating}>
-                        ★ {Number(item.rating || 0).toFixed(1)}
-                      </span>
-                    </div>
+                return (
+                  <div key={item.id} className={styles.similarCard}>
+                    <Link
+                      to={`/product/${item.id}`}
+                      className={styles.cardLink}
+                    >
+                      <div className={styles.similarMedia}>
+                        <img
+                          src={item.thumbnail || item.images?.[0]}
+                          alt={item.title}
+                          className={styles.similarImg}
+                        />
+                      </div>
+
+                      <div className={styles.similarBody}>
+                        <div className={styles.similarCategory}>
+                          {item.category}
+                        </div>
+                        <div className={styles.similarTitle}>{item.title}</div>
+                        <div className={styles.similarBottom}>
+                          <span className={styles.similarPrice}>
+                            {formatMoney(item.price)}
+                          </span>
+                          <span className={styles.similarRating}>
+                            ★ {Number(item.rating || 0).toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {isSimilarInCart ? (
+                      <Link to="/cart" className={styles.cardIconBtn}>
+                        ✓
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.cardIconBtn}
+                        onClick={() => addToCart(item)}
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
