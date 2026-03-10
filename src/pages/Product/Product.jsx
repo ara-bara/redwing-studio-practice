@@ -3,36 +3,54 @@ import { Link, useParams } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { formatMoney } from "../../utils/formatMoney";
 import { calcPricing } from "../../utils/pricing";
-import { getProductsById } from "../../utils/productApi";
+import { getProducts, getProductsById } from "../../utils/productApi";
 import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
 export default function Product() {
   const { id } = useParams();
   const { addToCart, items } = useCart();
-  const [loading, setLoading] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState(false);
+  const [loadingAllProducts, setLoadingAllProducts] = useState(false);
   const [product, setProduct] = useState(null);
-  const [error, setError] = useState("");
+  const [errorProduct, setErrorProduct] = useState("");
+  const [errorAllProduct, setErrorAllProduct] = useState("");
   const [recentProducts, setRecentProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
 
   useEffect(() => {
     async function load() {
-      setLoading(true);
-      setError("");
+      setLoadingProduct(true);
+      setErrorProduct("");
       setProduct(null);
 
       try {
         const item = await getProductsById(id);
         setProduct(item);
-        console.log(item);
       } catch (e) {
-        setError("No received data");
+        setErrorProduct("No received data");
       } finally {
-        setLoading(false);
+        setLoadingProduct(false);
       }
     }
 
     load();
   }, [id]);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setLoadingAllProducts(true);
+      setErrorAllProduct("");
+      try {
+        const products = await getProducts(194);
+        setAllProducts(products);
+      } catch (e) {
+        setErrorAllProduct("No data received");
+      } finally {
+        setLoadingAllProducts(false);
+      }
+    }
+    loadProducts();
+  }, []);
 
   useEffect(() => {
     let recentViews = JSON.parse(localStorage.getItem("recent")) || [];
@@ -57,8 +75,22 @@ export default function Product() {
     return calcPricing(product.price, product.discountPercentage);
   }, [product]);
 
-  if (error) return <div className={styles.center}>{error}</div>;
-  if (loading || (!product && !error)) return <ProductSkeleton />;
+  const similarProducts = useMemo(() => {
+    if (!product) return [];
+    if (!allProducts.length) return [];
+    return allProducts
+      .filter(
+        (item) => item.id !== product.id && item.category === product.category,
+      )
+      .sort(
+        (a, b) =>
+          Math.abs(a.price - product.price) - Math.abs(b.price - product.price),
+      )
+      .slice(0, 4);
+  }, [product, allProducts]);
+
+  if (errorProduct) return <div className={styles.center}>{errorProduct}</div>;
+  if (loadingProduct || (!product && !errorProduct)) return <ProductSkeleton />;
 
   const imgSrc = product?.images?.[0] || product?.thumbnail || "";
 
@@ -255,6 +287,47 @@ export default function Product() {
                         {formatMoney(item.price)}
                       </span>
                       <span className={styles.recentRating}>
+                        ★ {Number(item.rating || 0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loadingAllProducts && similarProducts.length > 0 && (
+          <div className={styles.sectionBlock}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>Similar products</h2>
+            </div>
+
+            <div className={styles.similarGrid}>
+              {similarProducts.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className={styles.similarCard}
+                >
+                  <div className={styles.similarMedia}>
+                    <img
+                      src={item.thumbnail || item.images?.[0]}
+                      alt={item.title}
+                      className={styles.similarImg}
+                    />
+                  </div>
+
+                  <div className={styles.similarBody}>
+                    <div className={styles.similarCategory}>
+                      {item.category}
+                    </div>
+                    <div className={styles.similarTitle}>{item.title}</div>
+                    <div className={styles.similarBottom}>
+                      <span className={styles.similarPrice}>
+                        {formatMoney(item.price)}
+                      </span>
+                      <span className={styles.similarRating}>
                         ★ {Number(item.rating || 0).toFixed(1)}
                       </span>
                     </div>

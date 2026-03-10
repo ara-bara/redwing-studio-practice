@@ -391,6 +391,92 @@
   white-space: nowrap;
 }
 
+.similarGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.similarCard {
+  display: grid;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #efefef;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.similarCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(17, 17, 17, 0.06);
+  border-color: #e3e3e3;
+}
+
+.similarMedia {
+  background: #f5f5f5;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.similarImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.similarBody {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.similarCategory {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: #7c7c7c;
+}
+
+.similarTitle {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 900;
+  min-height: 38px;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.similarBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.similarPrice {
+  font-size: 14px;
+  font-weight: 950;
+  color: #111;
+}
+
+.similarRating {
+  font-size: 12px;
+  font-weight: 900;
+  color: #6b6b6b;
+  white-space: nowrap;
+}
+
 .reviewsWide {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -430,7 +516,8 @@
 }
 
 @media (max-width: 1200px) {
-  .recentGrid {
+  .recentGrid,
+  .similarGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
@@ -466,7 +553,8 @@
     padding: 10px;
   }
 
-  .recentGrid {
+  .recentGrid,
+  .similarGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -504,10 +592,10 @@
     text-align: left;
   }
 
-  .recentGrid {
+  .recentGrid,
+  .similarGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .reviewsWide {
     grid-template-columns: 1fr;
   }
@@ -579,19 +667,22 @@
     font-size: 16px;
   }
 
-  .recentGrid {
+  .recentGrid,
+  .similarGrid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  .recentCard {
+  .recentCard,
+  .similarCard {
     display: grid;
     grid-template-columns: 96px minmax(0, 1fr);
     align-items: center;
     overflow: hidden;
   }
 
-  .recentMedia {
+  .recentMedia,
+  .similarMedia {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -601,7 +692,8 @@
     aspect-ratio: auto;
   }
 
-  .recentImg {
+  .recentImg,
+  .similarImg {
     width: 100%;
     max-width: 72px;
     max-height: 72px;
@@ -609,7 +701,8 @@
     object-fit: contain;
   }
 
-  .recentBody {
+  .recentBody,
+  .similarBody {
     min-width: 0;
     display: flex;
     flex-direction: column;

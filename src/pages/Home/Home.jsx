@@ -26,7 +26,7 @@ export default function Home() {
       setLoading(true);
       setError("");
       try {
-        const items = await getProducts(30);
+        const items = await getProducts(194);
         setProducts(items);
       } catch (e) {
         setError("No data received");
