@@ -304,6 +304,24 @@
   border-top: 1px solid #efefef;
 }
 
+.loadMoreBtn {
+  margin: 40px auto 0;
+  display: block;
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loadMoreBtn:hover {
+  background: #1c1c1c;
+}
+
 @media (max-width: 1100px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
