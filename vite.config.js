@@ -4,4 +4,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   base: "/redwing-studio-practice/",
+  build: {
+    assetsDir: "assets",
+  },
 });
