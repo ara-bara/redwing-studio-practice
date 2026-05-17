@@ -6,6 +6,7 @@ import { calcPricing } from "../../utils/pricing";
 import { getProducts, getProductsById } from "../../utils/productApi";
 import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
+import { Helmet } from "react-helmet-async";
 export default function Product() {
   const { id } = useParams();
   const { addToCart, items } = useCart();
@@ -149,266 +150,333 @@ export default function Product() {
   );
 
   return (
-    <section className={styles.page}>
-      <div className={styles.container}>
-        <div className={styles.topbar}>
-          <Link className={styles.back} to="/">
-            ← Back to products
-          </Link>
+    <>
+      <Helmet>
+        <title>{product.title} | Redwing Studio</title>
 
-          <div className={styles.topRight}>
-            <span className={styles.topLabel}>Category</span>
-            <span className={styles.pill}>{product.category}</span>
+        <meta name="description" content={product.description} />
+
+        <meta
+          name="keywords"
+          content={`${product.title}, ${product.category}, ${product.brand || "store"}, ecommerce`}
+        />
+
+        <meta
+          property="og:title"
+          content={`${product.title} | Redwing Studio`}
+        />
+
+        <meta property="og:description" content={product.description} />
+
+        <meta property="og:image" content={imgSrc} />
+
+        <meta property="og:type" content="product" />
+
+        <meta
+          property="og:url"
+          content={`https://ara-bara.github.io/redwing-studio-practice/#/product/${product.id}`}
+        />
+
+        <link
+          rel="canonical"
+          href={`https://ara-bara.github.io/redwing-studio-practice/#/product/${product.id}`}
+        />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            name: product.title,
+            image: imgSrc,
+            description: product.description,
+            brand: {
+              "@type": "Brand",
+              name: product.brand || "Redwing Studio",
+            },
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "USD",
+              price: product.price,
+              availability:
+                product.stock > 0
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+            },
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: product.rating || 5,
+              reviewCount: reviews.length || 1,
+            },
+          })}
+        </script>
+      </Helmet>
+
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.topbar}>
+            <Link className={styles.back} to="/">
+              ← Back to products
+            </Link>
+
+            <div className={styles.topRight}>
+              <span className={styles.topLabel}>Category</span>
+              <span className={styles.pill}>{product.category}</span>
+            </div>
           </div>
-        </div>
 
-        <div className={styles.layout}>
-          <div className={styles.mediaCol}>
-            <div className={styles.mediaSticky}>
-              <div className={styles.media}>
-                <img className={styles.img} src={imgSrc} alt={product.title} />
+          <div className={styles.layout}>
+            <div className={styles.mediaCol}>
+              <div className={styles.mediaSticky}>
+                <div className={styles.media}>
+                  <img
+                    className={styles.img}
+                    src={imgSrc}
+                    alt={product.title}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className={styles.infoCol}>
-            <h1 className={styles.h1}>{product.title}</h1>
+            <div className={styles.infoCol}>
+              <h1 className={styles.h1}>{product.title}</h1>
 
-            <div className={styles.metaRow}>
-              {product.brand && (
-                <>
-                  <span className={styles.brand}>{product.brand}</span>
-                  <span className={styles.dot}>•</span>
-                </>
-              )}
-              <span className={styles.rating}>
-                ★ {Number(product.rating).toFixed(1)}
-              </span>
-              <span className={styles.dot}>•</span>
-              <span className={styles.stock}>{product.stock} in stock</span>
-            </div>
-
-            <div className={styles.priceBox}>
-              <div className={styles.priceLine}>
-                <span className={styles.priceNow}>
-                  {formatMoney(pricing.priceNow)}
+              <div className={styles.metaRow}>
+                {product.brand && (
+                  <>
+                    <span className={styles.brand}>{product.brand}</span>
+                    <span className={styles.dot}>•</span>
+                  </>
+                )}
+                <span className={styles.rating}>
+                  ★ {Number(product.rating).toFixed(1)}
                 </span>
+                <span className={styles.dot}>•</span>
+                <span className={styles.stock}>{product.stock} in stock</span>
+              </div>
+
+              <div className={styles.priceBox}>
+                <div className={styles.priceLine}>
+                  <span className={styles.priceNow}>
+                    {formatMoney(pricing.priceNow)}
+                  </span>
+
+                  {pricing.hasDiscount && (
+                    <span className={styles.priceOld}>
+                      {formatMoney(pricing.oldPrice)}
+                    </span>
+                  )}
+                </div>
 
                 {pricing.hasDiscount && (
-                  <span className={styles.priceOld}>
-                    {formatMoney(pricing.oldPrice)}
-                  </span>
+                  <div className={styles.savings}>
+                    You save {Math.round(pricing.discount)}%
+                  </div>
                 )}
               </div>
 
-              {pricing.hasDiscount && (
-                <div className={styles.savings}>
-                  You save {Math.round(pricing.discount)}%
-                </div>
-              )}
-            </div>
-
-            <div className={styles.desc}>
-              <div className={styles.h2}>Description</div>
-              <p className={styles.p}>{product.description}</p>
-            </div>
-            {cartButton}
-
-            <div className={styles.detailsGrid}>
-              <div className={styles.detail}>
-                <span className={styles.detailLabel}>SKU</span>
-                <span className={styles.detailValue}>
-                  #{String(product.id).padStart(4, "0")}
-                </span>
+              <div className={styles.desc}>
+                <div className={styles.h2}>Description</div>
+                <p className={styles.p}>{product.description}</p>
               </div>
+              {cartButton}
 
-              <div className={styles.detail}>
-                <span className={styles.detailLabel}>Availability</span>
-                <span className={styles.detailValue}>
-                  {product.stock > 0 ? "In stock" : "Out of stock"}
-                </span>
-              </div>
-
-              <div className={styles.detail}>
-                <span className={styles.detailLabel}>Category</span>
-                <span className={styles.detailValue}>{product.category}</span>
-              </div>
-
-              {product.brand && (
+              <div className={styles.detailsGrid}>
                 <div className={styles.detail}>
-                  <span className={styles.detailLabel}>Brand</span>
-                  <span className={styles.detailValue}>{product.brand}</span>
+                  <span className={styles.detailLabel}>SKU</span>
+                  <span className={styles.detailValue}>
+                    #{String(product.id).padStart(4, "0")}
+                  </span>
+                </div>
+
+                <div className={styles.detail}>
+                  <span className={styles.detailLabel}>Availability</span>
+                  <span className={styles.detailValue}>
+                    {product.stock > 0 ? "In stock" : "Out of stock"}
+                  </span>
+                </div>
+
+                <div className={styles.detail}>
+                  <span className={styles.detailLabel}>Category</span>
+                  <span className={styles.detailValue}>{product.category}</span>
+                </div>
+
+                {product.brand && (
+                  <div className={styles.detail}>
+                    <span className={styles.detailLabel}>Brand</span>
+                    <span className={styles.detailValue}>{product.brand}</span>
+                  </div>
+                )}
+              </div>
+
+              {detailsRows.length > 0 && (
+                <div className={styles.block}>
+                  <div className={styles.blockTitle}>Details</div>
+                  <div className={styles.kv}>
+                    {detailsRows.map((row) => (
+                      <div key={row.k} className={styles.kvRow}>
+                        <span className={styles.kvK}>{row.k}</span>
+                        <span className={styles.kvV}>{row.v}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
+          </div>
 
-            {detailsRows.length > 0 && (
-              <div className={styles.block}>
-                <div className={styles.blockTitle}>Details</div>
-                <div className={styles.kv}>
-                  {detailsRows.map((row) => (
-                    <div key={row.k} className={styles.kvRow}>
-                      <span className={styles.kvK}>{row.k}</span>
-                      <span className={styles.kvV}>{row.v}</span>
-                    </div>
-                  ))}
-                </div>
+          {recentProducts.length > 0 && (
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHead}>
+                <h2 className={styles.sectionTitle}>Recently viewed</h2>
               </div>
-            )}
-          </div>
+
+              <div className={styles.recentGrid}>
+                {recentProducts.map((item) => {
+                  const isRecentInCart = items.some(
+                    (cartItem) => cartItem.id === item.id,
+                  );
+
+                  return (
+                    <div key={item.id} className={styles.recentCard}>
+                      <Link
+                        to={`/product/${item.id}`}
+                        className={styles.cardLink}
+                      >
+                        <div className={styles.recentMedia}>
+                          <img
+                            src={item.thumbnail || item.images?.[0]}
+                            alt={item.title}
+                            className={styles.recentImg}
+                          />
+                        </div>
+
+                        <div className={styles.recentBody}>
+                          <div className={styles.recentCategory}>
+                            {item.category}
+                          </div>
+                          <div className={styles.recentTitle}>{item.title}</div>
+                          <div className={styles.recentBottom}>
+                            <span className={styles.recentPrice}>
+                              {formatMoney(item.price)}
+                            </span>
+                            <span className={styles.recentRating}>
+                              ★ {Number(item.rating || 0).toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+
+                      {isRecentInCart ? (
+                        <Link to="/cart" className={styles.cardIconBtn}>
+                          ✓
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.cardIconBtn}
+                          onClick={() => addToCart(item)}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!loadingAllProducts && similarProducts.length > 0 && (
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHead}>
+                <h2 className={styles.sectionTitle}>Recommended for you</h2>
+              </div>
+
+              <div className={styles.similarGrid}>
+                {similarProducts.map((item) => {
+                  const isSimilarInCart = items.some(
+                    (cartItem) => cartItem.id === item.id,
+                  );
+
+                  return (
+                    <div key={item.id} className={styles.similarCard}>
+                      <Link
+                        to={`/product/${item.id}`}
+                        className={styles.cardLink}
+                      >
+                        <div className={styles.similarMedia}>
+                          <img
+                            src={item.thumbnail || item.images?.[0]}
+                            alt={item.title}
+                            className={styles.similarImg}
+                          />
+                        </div>
+
+                        <div className={styles.similarBody}>
+                          <div className={styles.similarCategory}>
+                            {item.category}
+                          </div>
+                          <div className={styles.similarTitle}>
+                            {item.title}
+                          </div>
+                          <div className={styles.similarBottom}>
+                            <span className={styles.similarPrice}>
+                              {formatMoney(item.price)}
+                            </span>
+                            <span className={styles.similarRating}>
+                              ★ {Number(item.rating || 0).toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+
+                      {isSimilarInCart ? (
+                        <Link to="/cart" className={styles.cardIconBtn}>
+                          ✓
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.cardIconBtn}
+                          onClick={() => addToCart(item)}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {reviews.length > 0 && (
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHead}>
+                <h2 className={styles.sectionTitle}>Reviews</h2>
+              </div>
+
+              <div className={styles.reviewsWide}>
+                {reviews.slice(0, 3).map((r, idx) => (
+                  <div
+                    key={`${r.reviewerName || "r"}-${idx}`}
+                    className={styles.review}
+                  >
+                    <div className={styles.reviewTop}>
+                      <span className={styles.reviewName}>
+                        {r.reviewerName || "Anonymous"}
+                      </span>
+                      <span className={styles.reviewRate}>
+                        ★ {Number(r.rating).toFixed(1)}
+                      </span>
+                    </div>
+                    <div className={styles.reviewText}>{r.comment}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-
-        {recentProducts.length > 0 && (
-          <div className={styles.sectionBlock}>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>Recently viewed</h2>
-            </div>
-
-            <div className={styles.recentGrid}>
-              {recentProducts.map((item) => {
-                const isRecentInCart = items.some(
-                  (cartItem) => cartItem.id === item.id,
-                );
-
-                return (
-                  <div key={item.id} className={styles.recentCard}>
-                    <Link
-                      to={`/product/${item.id}`}
-                      className={styles.cardLink}
-                    >
-                      <div className={styles.recentMedia}>
-                        <img
-                          src={item.thumbnail || item.images?.[0]}
-                          alt={item.title}
-                          className={styles.recentImg}
-                        />
-                      </div>
-
-                      <div className={styles.recentBody}>
-                        <div className={styles.recentCategory}>
-                          {item.category}
-                        </div>
-                        <div className={styles.recentTitle}>{item.title}</div>
-                        <div className={styles.recentBottom}>
-                          <span className={styles.recentPrice}>
-                            {formatMoney(item.price)}
-                          </span>
-                          <span className={styles.recentRating}>
-                            ★ {Number(item.rating || 0).toFixed(1)}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-
-                    {isRecentInCart ? (
-                      <Link to="/cart" className={styles.cardIconBtn}>
-                        ✓
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.cardIconBtn}
-                        onClick={() => addToCart(item)}
-                      >
-                        +
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {!loadingAllProducts && similarProducts.length > 0 && (
-          <div className={styles.sectionBlock}>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>Recommended for you</h2>
-            </div>
-
-            <div className={styles.similarGrid}>
-              {similarProducts.map((item) => {
-                const isSimilarInCart = items.some(
-                  (cartItem) => cartItem.id === item.id,
-                );
-
-                return (
-                  <div key={item.id} className={styles.similarCard}>
-                    <Link
-                      to={`/product/${item.id}`}
-                      className={styles.cardLink}
-                    >
-                      <div className={styles.similarMedia}>
-                        <img
-                          src={item.thumbnail || item.images?.[0]}
-                          alt={item.title}
-                          className={styles.similarImg}
-                        />
-                      </div>
-
-                      <div className={styles.similarBody}>
-                        <div className={styles.similarCategory}>
-                          {item.category}
-                        </div>
-                        <div className={styles.similarTitle}>{item.title}</div>
-                        <div className={styles.similarBottom}>
-                          <span className={styles.similarPrice}>
-                            {formatMoney(item.price)}
-                          </span>
-                          <span className={styles.similarRating}>
-                            ★ {Number(item.rating || 0).toFixed(1)}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-
-                    {isSimilarInCart ? (
-                      <Link to="/cart" className={styles.cardIconBtn}>
-                        ✓
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.cardIconBtn}
-                        onClick={() => addToCart(item)}
-                      >
-                        +
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {reviews.length > 0 && (
-          <div className={styles.sectionBlock}>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>Reviews</h2>
-            </div>
-
-            <div className={styles.reviewsWide}>
-              {reviews.slice(0, 3).map((r, idx) => (
-                <div
-                  key={`${r.reviewerName || "r"}-${idx}`}
-                  className={styles.review}
-                >
-                  <div className={styles.reviewTop}>
-                    <span className={styles.reviewName}>
-                      {r.reviewerName || "Anonymous"}
-                    </span>
-                    <span className={styles.reviewRate}>
-                      ★ {Number(r.rating).toFixed(1)}
-                    </span>
-                  </div>
-                  <div className={styles.reviewText}>{r.comment}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+      </main>
+    </>
   );
 }

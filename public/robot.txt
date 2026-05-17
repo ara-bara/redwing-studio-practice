@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ara-bara.github.io/redwing-studio-practice/sitemap.xml
