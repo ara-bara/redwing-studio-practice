@@ -345,6 +345,7 @@ export default function Product() {
                           <img
                             src={item.thumbnail || item.images?.[0]}
                             alt={item.title}
+                            loading="lazy"
                             className={styles.recentImg}
                           />
                         </div>
@@ -407,6 +408,7 @@ export default function Product() {
                           <img
                             src={item.thumbnail || item.images?.[0]}
                             alt={item.title}
+                            loading="lazy"
                             className={styles.similarImg}
                           />
                         </div>
