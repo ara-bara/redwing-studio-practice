@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { trackEvent } from "../utils/analytics";
 
 const CartContext = createContext(null);
 
@@ -11,15 +12,20 @@ export function CartProvider({ children }) {
     setItems((prev) => {
       const min = product.minimumOrderQuantity || 1;
       const existing = prev.find((x) => x.id === product.id);
+
       if (existing) {
         return prev.map((x) => {
           if (x.id !== product.id) return x;
+
           const nextQty = x.qty + min;
+
           const clampedQty =
             x.stock != null ? Math.min(nextQty, x.stock) : nextQty;
+
           return { ...x, qty: clampedQty };
         });
       }
+
       const newItem = {
         id: product.id,
         title: product.title,
@@ -32,6 +38,13 @@ export function CartProvider({ children }) {
       };
 
       return [...prev, newItem];
+    });
+
+    trackEvent("add_to_cart", {
+      product_id: product.id,
+      product_name: product.title,
+      category: product.category,
+      price: product.price,
     });
   }
   function setQty(id, nextQty) {
@@ -53,7 +66,17 @@ export function CartProvider({ children }) {
     });
   }
   function removeFromCart(id) {
+    const removedItem = items.find((item) => item.id === id);
+
     setItems((prev) => prev.filter((item) => item.id !== id));
+
+    if (removedItem) {
+      trackEvent("remove_from_cart", {
+        product_id: removedItem.id,
+        product_name: removedItem.title,
+        price: removedItem.price,
+      });
+    }
   }
   useEffect(() => {
     localStorage.setItem("cart_v1", JSON.stringify(items));

@@ -7,6 +7,7 @@ import { getProducts, getProductsById } from "../../utils/productApi";
 import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
 import { Helmet } from "react-helmet-async";
+import { trackEvent } from "../../utils/analytics";
 export default function Product() {
   const { id } = useParams();
   const { addToCart, items } = useCart();
@@ -27,6 +28,13 @@ export default function Product() {
       try {
         const item = await getProductsById(id);
         setProduct(item);
+
+        trackEvent("view_product", {
+          product_id: item.id,
+          product_name: item.title,
+          category: item.category,
+          price: item.price,
+        });
       } catch (e) {
         setErrorProduct("No received data");
       } finally {
