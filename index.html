@@ -21,7 +21,12 @@
 
     <title>Redwing Studio Practice</title>
 
-    <!-- Google tag (gtag.js) -->
+    <script
+      id="cookieyes"
+      type="text/javascript"
+      src="https://cdn-cookieyes.com/client_data/f3055ac552bb39471f2ac2fade400bec/script.js"
+    ></script>
+
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-DTJ43NHFEW"
@@ -34,7 +39,6 @@
         dataLayer.push(arguments);
       }
 
-      // Consent Mode v2 - default denied
       gtag("consent", "default", {
         analytics_storage: "denied",
         ad_storage: "denied",
@@ -49,24 +53,6 @@
         debug_mode: true,
       });
     </script>
-
-    <!-- Microsoft Clarity temporarily disabled for GDPR compliance -->
-    <!--
-    <script type="text/javascript">
-      (function (c, l, a, r, i, t, y) {
-        c[a] =
-          c[a] ||
-          function () {
-            (c[a].q = c[a].q || []).push(arguments);
-          };
-        t = l.createElement(r);
-        t.async = 1;
-        t.src = "https://www.clarity.ms/tag/" + i;
-        y = l.getElementsByTagName(r)[0];
-        y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "ww7i7tn9wp");
-    </script>
-    -->
   </head>
 
   <body>
