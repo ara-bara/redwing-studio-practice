@@ -2,19 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
     <meta
       name="google-site-verification"
       content="TIXoO5K4iGWw-mlpZz13PXjGitPPqguNWVkzxE4v0xg"
     />
+
     <meta
       http-equiv="Cache-Control"
       content="no-cache, no-store, must-revalidate"
     />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <link rel="icon" href="/favicon.ico" />
+
     <title>Redwing Studio Practice</title>
+
+    <!-- Google tag (gtag.js) -->
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-DTJ43NHFEW"
@@ -27,12 +34,24 @@
         dataLayer.push(arguments);
       }
 
+      // Consent Mode v2 - default denied
+      gtag("consent", "default", {
+        analytics_storage: "denied",
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        wait_for_update: 500,
+      });
+
       gtag("js", new Date());
 
       gtag("config", "G-DTJ43NHFEW", {
         debug_mode: true,
       });
     </script>
+
+    <!-- Microsoft Clarity temporarily disabled for GDPR compliance -->
+    <!--
     <script type="text/javascript">
       (function (c, l, a, r, i, t, y) {
         c[a] =
@@ -47,9 +66,12 @@
         y.parentNode.insertBefore(t, y);
       })(window, document, "clarity", "script", "ww7i7tn9wp");
     </script>
+    -->
   </head>
+
   <body>
     <div id="root"></div>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
