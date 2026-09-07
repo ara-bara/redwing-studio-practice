@@ -3,25 +3,30 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { formatMoney } from "../../utils/formatMoney";
 import { calcPricing } from "../../utils/pricing";
+import type { ChangeEvent } from "react";
 import { getProducts } from "../../utils/productApi";
 import {
   filterProducts,
   getCategories,
   sortProducts,
 } from "../../utils/products";
-
 import styles from "./Home.module.scss";
 import { Helmet } from "react-helmet-async";
+import type { Product } from "../../types/product";
+
+type SortOption = "featured" | "new" | "rating" | "price_asc" | "price_desc";
 
 export default function Home() {
   const { addToCart, items } = useCart();
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState("featured");
+  const [sort, setSort] = useState<SortOption>("featured");
   const [visibleProducts, setVisibleProducts] = useState(12);
+
+ 
 
   useEffect(() => {
     async function loadProducts() {
@@ -50,6 +55,18 @@ export default function Home() {
   useEffect(() => {
     setVisibleProducts(12);
   }, [q, category, sort]);
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>): void {
+    setQ(event.target.value);
+  }
+
+   function handleSortChange(event: ChangeEvent<HTMLSelectElement>): void {
+    setSort(event.target.value as SortOption);
+  }
+
+  function handleChangeCategory(event: ChangeEvent<HTMLSelectElement>): void {
+    setCategory(event.target.value);
+  }
 
   if (loading) return <div className={styles.center}>Loading…</div>;
   if (error) return <div className={styles.center}>{error}</div>;
@@ -108,7 +125,7 @@ export default function Home() {
               <span className={styles.searchLabel}>Search</span>
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Search by name or brand…"
                 className={styles.input}
               />
@@ -118,7 +135,7 @@ export default function Home() {
               <span className={styles.selectLabel}>Category</span>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={handleChangeCategory}
                 className={styles.select}
               >
                 {categories.map((c) => (
@@ -133,7 +150,7 @@ export default function Home() {
               <span className={styles.selectLabel}>Sort</span>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value)}
+                onChange={handleSortChange}
                 className={styles.select}
               >
                 <option value="featured">Featured</option>

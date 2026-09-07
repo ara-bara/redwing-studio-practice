@@ -1,14 +1,21 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { trackEvent } from "../utils/analytics";
+import type { CartContextValue } from "../types/cart";
+import type { ReactNode } from "react";
+import type { CartItem } from "../types/cart";
+import type { Product } from "../types/product";
 
-const CartContext = createContext(null);
+type CartProviderProps = {
+  children: ReactNode;
+};
+const CartContext = createContext<CartContextValue | null>(null);
 
-export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
+export function CartProvider({ children }: CartProviderProps) {
+  const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem("cart_v1");
-    return saved ? JSON.parse(saved) : [];
+    return (saved ? JSON.parse(saved) : []) as CartItem[];
   });
-  function addToCart(product) {
+  function addToCart(product: Product) {
     setItems((prev) => {
       const min = product.minimumOrderQuantity || 1;
       const existing = prev.find((x) => x.id === product.id);
@@ -47,7 +54,7 @@ export function CartProvider({ children }) {
       price: product.price,
     });
   }
-  function setQty(id, nextQty) {
+  function setQty(id:number, nextQty:number) {
     setItems((prev) => {
       return prev.map((item) => {
         if (item.id !== id) return item;
@@ -65,7 +72,7 @@ export function CartProvider({ children }) {
       });
     });
   }
-  function removeFromCart(id) {
+  function removeFromCart(id:number) {
     const removedItem = items.find((item) => item.id === id);
 
     setItems((prev) => prev.filter((item) => item.id !== id));

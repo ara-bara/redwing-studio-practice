@@ -8,16 +8,17 @@ import styles from "./Product.module.scss";
 import ProductSkeleton from "./ProductSkeleton";
 import { Helmet } from "react-helmet-async";
 import { trackEvent } from "../../utils/analytics";
+import type { Product as ProductData } from "../../types/product";
 export default function Product() {
   const { id } = useParams();
   const { addToCart, items } = useCart();
   const [loadingProduct, setLoadingProduct] = useState(false);
   const [loadingAllProducts, setLoadingAllProducts] = useState(false);
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState<ProductData | null>(null);
   const [errorProduct, setErrorProduct] = useState("");
   const [errorAllProduct, setErrorAllProduct] = useState("");
-  const [recentProducts, setRecentProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
+  const [recentProducts, setRecentProducts] = useState<ProductData[]>([]);
+  const [allProducts, setAllProducts] = useState<ProductData[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -26,6 +27,9 @@ export default function Product() {
       setProduct(null);
 
       try {
+        if (id === undefined) {
+          throw new Error("Product ID is missing");
+        }
         const item = await getProductsById(id);
         setProduct(item);
 
@@ -44,7 +48,7 @@ export default function Product() {
 
     load();
   }, [id]);
-
+  ``;
   useEffect(() => {
     async function loadProducts() {
       setLoadingAllProducts(true);
@@ -62,13 +66,17 @@ export default function Product() {
   }, []);
 
   useEffect(() => {
-    let recentViews = JSON.parse(localStorage.getItem("recent")) || [];
+    const saved = localStorage.getItem("recent");
+    const recentViews =
+      saved !== null ? (JSON.parse(saved) as ProductData[]) : [];
     setRecentProducts(recentViews);
   }, []);
   useEffect(() => {
     if (!product) return;
 
-    let recentViews = JSON.parse(localStorage.getItem("recent")) || [];
+    const saved = localStorage.getItem("recent");
+    let recentViews =
+      saved !== null ? (JSON.parse(saved) as ProductData[]) : [];
 
     recentViews = recentViews.filter((item) => item.id !== product.id);
     recentViews = [...recentViews, product];
@@ -99,7 +107,8 @@ export default function Product() {
   }, [product, allProducts]);
 
   if (errorProduct) return <div className={styles.center}>{errorProduct}</div>;
-  if (loadingProduct || (!product && !errorProduct)) return <ProductSkeleton />;
+  if (loadingProduct || product === null || pricing === null)
+    return <ProductSkeleton />;
 
   const imgSrc = product?.images?.[0] || product?.thumbnail || "";
 
@@ -126,7 +135,7 @@ export default function Product() {
           v: `${product.dimensions.width}×${product.dimensions.height}×${product.dimensions.depth}`,
         }
       : null,
-  ].filter(Boolean);
+  ].filter((feature) => feature !== null);
 
   const tags =
     Array.isArray(product?.tags) && product.tags.length ? product.tags : [];
@@ -134,7 +143,7 @@ export default function Product() {
   const detailsRows = [
     ...features,
     tags.length ? { k: "Tags", v: tags.slice(0, 8).join(", ") } : null,
-  ].filter(Boolean);
+  ].filter((row) => row !== null);
 
   const reviews =
     Array.isArray(product?.reviews) && product.reviews.length
